@@ -1,0 +1,86 @@
+This document describes the citation of computer programming source code in programming based assessments at the School of Information Technologies, University of Sydney.
+
+
+
+PART 1
+Citation is important
+
+It is important you acknowledge any source code that does not belong to you. It may otherwise be treated as plagiarism under the University of Sydney's Policy: ACADEMIC HONESTY IN COURSEWORK POLICY 2015
+http://sydney.edu.au/policies/showdoc.aspx?recnum=PDOC2012/254&RendNum=0
+
+
+
+PART 2
+How to cite source code
+
+The included files are examples of how to include citations in your code.
+
+Use comments for the programming language to emphasise the location of cited source code. Symbols for commenting depend on the programming language being used. By including these comments, this will not affect the correctness of the program.
+
+You will need to include the marker "USYD CODE CITATION ACKNOWLEDGEMENT" and details about which section of code is being referenced. The size of the referenced items could be entire files, functions, small sections of code and even specific lines of code.
+
+    /* USYD CODE CITATION ACKNOWLEDGEMENT
+     * I declare that the following lines of code have been copied from the
+     * website titled: "How to write a memory allocator" and it is not my own work. 
+     * 
+     * Original URL
+     * https://allaboutc.org/how-to-write-a-memory-allocator.html
+     * Last access April, 2018
+     */
+    if (refs[i].memory == ref) {
+        refs[i].memory = NULL;
+        refs[i].children = NULL;
+        refsize--;
+        return NULL;
+    }
+    /* end of copied code */
+
+
+
+PART 3
+If I cite the code, will there be a plagiarism case?
+
+It depends:
+ - No. There will not be a plagiarism case for the code that was properly cited. 
+ - Yes. If there are other sections of code that were never cited correctly, this may result in a plagiarism case. 
+
+
+
+PART 4
+Does citing code change the assessment outcome?
+
+It depends.
+
+Making an acknowledgement of code borrowed may impact the grading of the assessment. If the referenced code constitutes part of the assessment, then the marker can lower the student score.
+
+An example where the assessment outcome changes:
+Suppose the individual assessment is to "write a binary search implementation using the programming language Python". If the code references a partial implementation of binary search in Python from a website on the Internet, or from a friend, then the student could not be assessed on their ability and they can lose marks. 
+
+An example where the assessment outcome does not change:
+Suppose the individual assessment is to "write a program to calculate the determinant of an NxN matrix using the programming language Java". The specification further describes that "the input of the NxN matrix is read in from a file" and it is not assessable. A student can then make references to code on 1) how to load data from files into Java, or 2) how to write a class in Java to represent a matrix, or 3) how to create a 2D array in Java. The assessment is clearly identified as "the calculation". The student is being evaluated on their ability to "calculate the determinant" using a method described in the specification, or otherwise. The student would not normally be penalised for utilising and citing code on cases (1), (2), or (3). However, students are strongly advised to confirm with the teaching staff before making the assumption.
+
+
+
+PART 5
+FAQ
+
+Q What if I am unsure about what the assessment is? 
+A Please consult with the teaching staff. Different courses have varying expectations of students and what they should be able to achieve independently of cited materials.
+
+Q What if I get help from online discussion forums within the course itself?
+A This should also be cited. Try to obtain the associated link and make the citation as accurate as possible.
+
+Q I am a good programmer, but my current course requires a programming language I have never used before. I do not know how to do many trivial activities such as defining a new data type, initialising an array, or how to use a built in sort function. Should I make citations for each? how little is too little?
+A This should depend on what is being assessed. Is the course making use of the language to achieve a higher purpose, or is the course assessing your ability to understand and use these as part of your learning? 
+For example improving the accuracy of a face recognition system relies more on statistical and mathematical reasoning than implementation detail and language choice and may not need to be cited. Whereas a course in programming languages and paradigms has an expectation of being able to use those chosen languages and should be cited. Again, if in doubt, please contact the teaching team of that course.
+
+Q Do I need to cite materials in the course, such as lectures, or tutorials?
+A This will depend on the teaching staff and the form of assessment being administered. The tutorial solution from a previous semesters offering may form part of an assessment in the current semester. See PART 4 concerning the outcomes of using such code.
+
+Q Do I need to cite myself if I have used the code in another assessment?
+A Yes. The ACADEMIC HONESTY IN COURSEWORK POLICY 2015 describes the self-plagiarism and programming source code would also be included.
+
+Q What if there are 10 minutes to the deadline and I found code to help make my solution work, but I don't know if I will lose marks for the assessment?
+A It is crucial that you include a citation. You can acknowledge that you did not have the opportunity to ask about the use of cited code and how it may impact the assessment outcome. You can contact the teaching staff about it and they may provide further direction.
+
+
