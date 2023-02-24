@@ -1,0 +1,6 @@
+[submodule "COMP2017/week1/exercises/min-max-and-sum"]
+	path = COMP2017/week1/exercises/min-max-and-sum
+	url = git.edstem.org:challenge/79728/min-max-and-sum
+[submodule "COMP2017/week1/exercises/rot-13"]
+	path = COMP2017/week1/exercises/rot-13
+	url = git.edstem.org:challenge/79729/rot-13
