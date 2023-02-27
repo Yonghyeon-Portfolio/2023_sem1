@@ -1,3 +1,4 @@
+git status
 git pull
 git add .
 echo "commit message: "
