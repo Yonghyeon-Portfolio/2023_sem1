@@ -1,0 +1,24 @@
+1. p[0]
+
+2. p[10]
+
+3. r+20
+
+4. g
+
+5. p, &p[0]
+
+6. p = p + 1
+
+7.
+((char*) r)              // this cast is necessary, as pointer arithmatic will implicitly multiply values.
++ (sizeof(r[0]) * 5) + 5 //since its the [5][5] we do 5 * arraylength + 5
+
+8. We can mix notation as evident by these answers, however there are some differences with arrays and pointers, name semantics which is outlines in the lecture. Refer to Week 2 lecture on pointers.
+
+Related and useful post(s) on Ed:
+#178 [DEBUG] ASAN IS YOUR FRIEND!
+https://edstem.org/au/courses/10466/discussion/1201246
+
+#287 Why won't C let you have a double pointer (**ptr) to a 2D array?
+https://edstem.org/au/courses/10466/discussion/1208673
