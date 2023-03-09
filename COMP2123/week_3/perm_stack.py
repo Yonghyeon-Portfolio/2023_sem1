@@ -34,7 +34,6 @@ class Cell:
                 info += (str(e) + ", ")
         info += "\b\b]"
         return info
-    
 
 def permutations(input_ls):
     PERM_STACK = []
