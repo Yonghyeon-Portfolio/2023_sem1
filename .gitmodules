@@ -10,3 +10,6 @@
 [submodule "COMP2017/Assignment_1/go-in-the-mist-scaffold"]
 	path = COMP2017/Assignment_1/go-in-the-mist-scaffold
 	url = git.edstem.org:challenge/80955/scaffold/go-in-the-mist-scaffold
+[submodule "COMP2017/Assignment_2/vm-riskxvii"]
+	path = COMP2017/Assignment_2/vm-riskxvii
+	url = git.edstem.org:challenge/81649/vm-riskxvii

@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "instructions.h": "c",
+        "vm_riskxvii.h": "c",
+        "stdio.h": "c",
+        "stdint.h": "c",
+        "process_instructions.h": "c",
+        "functions.h": "c"
+    }
+}
