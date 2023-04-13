@@ -9,7 +9,7 @@ def sum_up_arr(ls_A):
 
 def trade_dates_1(daily_fluctuations):
     '''
-    It is assume that stocks are 
+    It is assumed that stocks are 
     - bought at the start of day (before any fluctuation happends)
     - sold at the end of day (after all fluctuation has happended)
     '''
