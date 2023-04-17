@@ -32,8 +32,8 @@ def with_queue(n, method):
     return time.time() - start
 
 if __name__ == "__main__": 
-    NUM = 100000
-    array_result = with_array(NUM//10, "FIFO")
+    NUM = 40000
+    array_result = with_array(NUM, "FIFO")
     queue_result = with_queue(NUM, "FIFO")
     
     print("%sList result: %.3f\nQueue Result: %.3f"
