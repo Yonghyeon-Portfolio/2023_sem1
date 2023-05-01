@@ -1,0 +1,1 @@
+./batsman < testA.in | diff - testA.out

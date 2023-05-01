@@ -1,0 +1,3 @@
+Hello from C!
+Hello World!
+It's nice to meet you :D
