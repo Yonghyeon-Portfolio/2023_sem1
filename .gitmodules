@@ -13,3 +13,21 @@
 [submodule "COMP2017/Assignment_2/vm-riskxvii"]
 	path = COMP2017/Assignment_2/vm-riskxvii
 	url = git.edstem.org:challenge/81649/vm-riskxvii
+[submodule "COMP2017/Assignment_3/milestone/milestone"]
+	path = COMP2017/Assignment_3/milestone/milestone
+	url = git.edstem.org:challenge/84968/milestone
+[submodule "COMP2017/Assignment_3/pex"]
+	path = COMP2017/Assignment_3/pex
+	url = git.edstem.org:challenge/85634/pex
+[submodule "COMP2017/week2/ed_challenges/count-files"]
+	path = COMP2017/week2/ed_challenges/count-files
+	url = git.edstem.org:challenge/79730/count-files
+[submodule "COMP2017/week2/ed_challenges/bouncy-string"]
+	path = COMP2017/week2/ed_challenges/bouncy-string
+	url = git.edstem.org:challenge/79731/bouncy-string
+[submodule "COMP2017/week2/ed_challenges/reverse-array"]
+	path = COMP2017/week2/ed_challenges/reverse-array
+	url = git.edstem.org:challenge/79732/reverse-array
+[submodule "COMP2017/week2/ed_challenges/triforce"]
+	path = COMP2017/week2/ed_challenges/triforce
+	url = git.edstem.org:challenge/79733/triforce
