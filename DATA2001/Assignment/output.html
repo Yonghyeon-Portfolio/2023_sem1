@@ -14585,6 +14585,11 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">MultiPolygon</span>
 <span class="kn">from</span> <span class="nn">geoalchemy2</span> <span class="kn">import</span> <span class="n">Geometry</span><span class="p">,</span> <span class="n">WKTElement</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span>
+<span class="kn">import</span> <span class="nn">psycopg2</span>
+<span class="kn">import</span> <span class="nn">psycopg2.extras</span>
+<span class="kn">import</span> <span class="nn">json</span>
 </pre></div>
 
      </div>
@@ -14617,6 +14622,74 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 </div>
 
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># database connection, querying functions</span>
+
+<span class="n">credentials</span> <span class="o">=</span> <span class="s2">&quot;Credentials.json&quot;</span>
+
+<span class="k">def</span> <span class="nf">pgconnect</span><span class="p">(</span><span class="n">credential_filepath</span><span class="p">,</span> <span class="n">db_schema</span><span class="o">=</span><span class="s2">&quot;public&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">credential_filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">db_conn_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">host</span>       <span class="o">=</span> <span class="n">db_conn_dict</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span>
+        <span class="n">db_user</span>    <span class="o">=</span> <span class="n">db_conn_dict</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span>
+        <span class="n">db_pw</span>      <span class="o">=</span> <span class="n">db_conn_dict</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span>
+        <span class="n">default_db</span> <span class="o">=</span> <span class="n">db_conn_dict</span><span class="p">[</span><span class="s1">&#39;database&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">db</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s1">&#39;postgresql+psycopg2://&#39;</span><span class="o">+</span><span class="n">db_user</span><span class="o">+</span><span class="s1">&#39;:&#39;</span><span class="o">+</span><span class="n">db_pw</span><span class="o">+</span><span class="s1">&#39;@&#39;</span><span class="o">+</span><span class="n">host</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">default_db</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">conn</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Connected successfully.&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unable to connect to the database.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">db</span><span class="p">,</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">db</span><span class="p">,</span><span class="n">conn</span>
+
+<span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">sqlcmd</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span> <span class="k">if</span> <span class="n">df</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span><span class="n">sqlcmd</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sqlcmd</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">result</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error encountered: &quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># pd -&gt; PostGIS suitable type conversino helper function</span>
+<span class="k">def</span> <span class="nf">create_wkt_element</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">srid</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">geom</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s1">&#39;Polygon&#39;</span><span class="p">:</span>
+        <span class="n">geom</span> <span class="o">=</span> <span class="n">MultiPolygon</span><span class="p">([</span><span class="n">geom</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">WKTElement</span><span class="p">(</span><span class="n">geom</span><span class="o">.</span><span class="n">wkt</span><span class="p">,</span> <span class="n">srid</span><span class="p">)</span>
+<span class="n">srid</span> <span class="o">=</span> <span class="mi">4326</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -14625,11 +14698,105 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Initial filtering (only interested in &quot;Greater Sydney&quot; GCC)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">db</span><span class="p">,</span> <span class="n">conn</span> <span class="o">=</span> <span class="n">pgconnect</span><span class="p">(</span><span class="n">credentials</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Connected successfully.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">inspect</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">inspect</span><span class="p">(</span><span class="n">db</span><span class="p">)</span><span class="o">.</span><span class="n">get_schema_names</span><span class="p">())</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SET search_path TO public;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">query</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="s2">&quot;SELECT PostGIS_version();&quot;</span><span class="p">))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>[&#39;information_schema&#39;, &#39;public&#39;, &#39;sa2_regions&#39;]
+                         postgis_version
+0  3.3 USE_GEOS=1 USE_PROJ=1 USE_STATS=1
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Initial filtering (SA2_regions)</span>
+<span class="c1"># 1. W&#39;re only interested in &quot;Greater Sydney&quot; GCC)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">sa2_bounds_raw</span><span class="o">.</span><span class="n">GCC_NAME21</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;... more regions (truncated)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">sa2_bounds</span> <span class="o">=</span> <span class="n">sa2_bounds_raw</span><span class="p">[</span><span class="n">sa2_bounds_raw</span><span class="o">.</span><span class="n">GCC_NAME21</span> <span class="o">==</span> <span class="s2">&quot;Greater Sydney&quot;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">sa2_bounds</span><span class="o">.</span><span class="n">GCC_NAME21</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sa2_bounds</span><span class="o">.</span><span class="n">GCC_NAME21</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># 2. We&#39;ll only be conducting analysis on SA2 regions. We&#39;ll not be </span>
+<span class="c1"># examining ins encompassing(broader) regions such as SA3, SA4, and states. </span>
+<span class="n">sa2_bounds</span> <span class="o">=</span> <span class="n">sa2_bounds</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;SA2_CODE21&quot;</span><span class="p">,</span> <span class="s2">&quot;SA2_NAME21&quot;</span><span class="p">,</span> <span class="s2">&quot;AREASQKM21&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]]</span>
+<span class="c1"># 3. rename columns</span>
+<span class="n">sa2_bounds</span> <span class="o">=</span> <span class="n">sa2_bounds</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">SA2_CODE21</span><span class="o">=</span><span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="n">SA2_NAME21</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">AREASQKM21</span><span class="o">=</span><span class="s2">&quot;area_sq_km&quot;</span><span class="p">))</span>
+<span class="c1"># 4. cast appropriately</span>
+<span class="n">sa2_bounds</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sa2_bounds</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">sa2_bounds</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sa2_bounds</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="n">sa2_bounds</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sa2_bounds</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">create_wkt_element</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="n">x</span><span class="p">,</span><span class="n">srid</span><span class="o">=</span><span class="n">srid</span><span class="p">))</span>
 </pre></div>
 
      </div>
@@ -14660,7 +14827,21 @@ Name: GCC_NAME21, dtype: int64
 ... more regions (truncated)
 
 Greater Sydney    373
-Name: GCC_NAME21, dtype: int64
+Name: GCC_NAME21, dtype: int64 
+
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>c:\Users\yongh\anaconda3\lib\site-packages\geopandas\geodataframe.py:1442: UserWarning: Geometry column does not contain geometry.
+  warnings.warn(&#34;Geometry column does not contain geometry.&#34;)
 </pre>
 </div>
 </div>
@@ -14677,16 +14858,21 @@ Name: GCC_NAME21, dtype: int64
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sa2_bounds</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
-<span class="sd">&#39;&#39;&#39; </span>
-<span class="sd">description: Statistical Region 2 (SA2) digital boundaries (Greater Sydney only)</span>
-<span class="sd">entries: 373</span>
-<span class="sd">columns: 17 (all columns are complete with no missing values for all entries)</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="n">sa2_table</span> <span class="o">=</span> 
-<span class="sd">&#39;&#39;&#39;</span>
-
-<span class="sd">&#39;&#39;&#39;</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Glimpse into SA2 regions</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sa2_bounds</span><span class="o">.</span><span class="n">info</span><span class="p">())</span>
+<span class="c1"># SQL table definition for SA2 regions</span>
+<span class="n">max_sa2_name_len</span> <span class="o">=</span> <span class="n">sa2_bounds</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">table</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">DROP TABLE IF EXISTS sa2_bounds;</span>
+<span class="s1">CREATE TABLE sa2_bounds(</span>
+<span class="s1">    code INT PRIMARY KEY,</span>
+<span class="s1">    name VARCHAR(</span><span class="si">{</span><span class="n">max_sa2_name_len</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">) NOT NULL,</span>
+<span class="s1">    area_sq_km NUMERIC NOT NULL,</span>
+<span class="s1">    geometry GEOMETRY(MULTIPOLYGON,</span><span class="si">{</span><span class="mi">4326</span><span class="si">}</span><span class="s1">) NOT NULL</span>
+<span class="s1">);</span>
+<span class="s1">&#39;&#39;&#39;</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+<span class="n">sa2_bounds</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span><span class="s1">&#39;sa2_bounds&#39;</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">Geometry</span><span class="p">(</span><span class="s1">&#39;MULTIPOLYGON&#39;</span><span class="p">,</span> <span class="n">srid</span><span class="p">)})</span>
 </pre></div>
 
      </div>
@@ -14710,28 +14896,16 @@ Name: GCC_NAME21, dtype: int64
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>&lt;class &#39;geopandas.geodataframe.GeoDataFrame&#39;&gt;
 Int64Index: 373 entries, 28 to 641
-Data columns (total 17 columns):
- #   Column      Non-Null Count  Dtype   
----  ------      --------------  -----   
- 0   SA2_CODE21  373 non-null    object  
- 1   SA2_NAME21  373 non-null    object  
- 2   CHG_FLAG21  373 non-null    object  
- 3   CHG_LBL21   373 non-null    object  
- 4   SA3_CODE21  373 non-null    object  
- 5   SA3_NAME21  373 non-null    object  
- 6   SA4_CODE21  373 non-null    object  
- 7   SA4_NAME21  373 non-null    object  
- 8   GCC_CODE21  373 non-null    object  
- 9   GCC_NAME21  373 non-null    object  
- 10  STE_CODE21  373 non-null    object  
- 11  STE_NAME21  373 non-null    object  
- 12  AUS_CODE21  373 non-null    object  
- 13  AUS_NAME21  373 non-null    object  
- 14  AREASQKM21  373 non-null    float64 
- 15  LOCI_URI21  373 non-null    object  
- 16  geometry    373 non-null    geometry
-dtypes: float64(1), geometry(1), object(15)
-memory usage: 52.5+ KB
+Data columns (total 4 columns):
+ #   Column      Non-Null Count  Dtype  
+---  ------      --------------  -----  
+ 0   code        373 non-null    int32  
+ 1   name        373 non-null    object 
+ 2   area_sq_km  373 non-null    float64
+ 3   geometry    373 non-null    object 
+dtypes: float64(1), int32(1), object(2)
+memory usage: 13.1+ KB
+None
 </pre>
 </div>
 </div>
@@ -14745,13 +14919,175 @@ memory usage: 52.5+ KB
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&#39; \ndescription: Statistical Region 2 (SA2) digital boundaries (Greater Sydney only)\nentries: 373\ncolumns: 17 (all columns are complete with no missing values for all entries)\n&#39;</pre>
+<pre>373</pre>
 </div>
 
 </div>
 
 </div>
 
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="s2">&quot;SELECT * FROM sa2_bounds&quot;</span><span class="p">);</span>
+<span class="n">result</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>code</th>
+      <th>name</th>
+      <th>area_sq_km</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>102011028</td>
+      <td>Avoca Beach - Copacabana</td>
+      <td>6.4376</td>
+      <td>0106000020E6100000010000000103000000010000005E...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>102011029</td>
+      <td>Box Head - MacMasters Beach</td>
+      <td>32.0802</td>
+      <td>0106000020E61000000100000001030000000100000010...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>102011030</td>
+      <td>Calga - Kulnura</td>
+      <td>767.9512</td>
+      <td>0106000020E61000000200000001030000000100000085...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>102011031</td>
+      <td>Erina - Green Point</td>
+      <td>33.7934</td>
+      <td>0106000020E61000000100000001030000000100000041...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>102011032</td>
+      <td>Gosford - Springfield</td>
+      <td>16.9123</td>
+      <td>0106000020E6100000010000000103000000010000007E...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>368</th>
+      <td>128021537</td>
+      <td>Royal National Park</td>
+      <td>139.3336</td>
+      <td>0106000020E61000000100000001030000000100000046...</td>
+    </tr>
+    <tr>
+      <th>369</th>
+      <td>128021538</td>
+      <td>Sutherland - Kirrawee</td>
+      <td>7.7550</td>
+      <td>0106000020E61000000100000001030000000100000089...</td>
+    </tr>
+    <tr>
+      <th>370</th>
+      <td>128021607</td>
+      <td>Engadine</td>
+      <td>8.9538</td>
+      <td>0106000020E6100000010000000103000000010000008E...</td>
+    </tr>
+    <tr>
+      <th>371</th>
+      <td>128021608</td>
+      <td>Loftus - Yarrawarrah</td>
+      <td>3.8436</td>
+      <td>0106000020E610000001000000010300000001000000A1...</td>
+    </tr>
+    <tr>
+      <th>372</th>
+      <td>128021609</td>
+      <td>Woronora Heights</td>
+      <td>3.1374</td>
+      <td>0106000020E610000001000000010300000001000000F0...</td>
+    </tr>
+  </tbody>
+</table>
+<p>373 rows × 4 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+     </div>
+</div>
+</div>
 </div>
 
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">

@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "pe_exchange.h": "c",
+        "test_trader.h": "c",
+        "pe_common.h": "c",
+        "string.h": "c",
+        "math.h": "c",
+        "errno.h": "c",
+        "unistd.h": "c",
+        "signal.h": "c",
+        "cdefs.h": "c",
+        "stat.h": "c",
+        "fcntl.h": "c",
+        "types.h": "c",
+        "stdlib.h": "c",
+        "_types.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
